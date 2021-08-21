@@ -29,8 +29,8 @@ from darker.git import (
 from darker.help import ISORT_INSTRUCTION
 from darker.import_sorting import apply_isort, isort
 from darker.linting import run_linters
-from darker.utils import GIT_DATEFORMAT, TextDocument, get_common_root
-from darker.verification import BinarySearch, NotEquivalentError, verify_ast_unchanged
+from darker.utils import GIT_DATEFORMAT, TextDocument, get_common_root, debug_dump
+from darker.verification import BinarySearch, NotEquivalentError, AstConsistencyVerifier
 
 logger = logging.getLogger(__name__)
 
@@ -122,8 +122,25 @@ def _reformat_single_file(  # pylint: disable=too-many-arguments,too-many-locals
     src = git_root / path_in_repo
     edited_linenums_differ = EditedLinenumsDiffer(git_root, revrange)
 
-    max_context_lines = len(rev2_isorted.lines)
-    minimum_context_lines = BinarySearch(0, max_context_lines + 1)
+    # Run black
+    logger.debug("Read %s lines from edited file %s", len(rev2_isorted.lines), src)
+    formatted = run_black(rev2_isorted, black_config)
+    logger.debug("Black reformat resulted in %s lines", len(formatted.lines))
+
+    # Keep verification intermediate state in memory for performance reasons
+    verifier = AstConsistencyVerifier(rev2_isorted)
+    verifier.assert_equivalent_to_baseline(formatted)
+
+    # Get the diff between the edited and reformatted file
+    opcodes = diff_and_get_opcodes(rev2_isorted, formatted)
+
+    # Convert the diff into chunks
+    black_chunks = list(opcodes_to_chunks(opcodes, rev2_isorted, formatted))
+
+    # get max reasonable -U
+    search_upper_bound = max(max(len(chunk.old_lines), len(chunk.new_lines)) for chunk in black_chunks)
+
+    minimum_context_lines = BinarySearch(0, search_upper_bound + 1)
     last_successful_reformat = None
     while not minimum_context_lines.found:
         context_lines = minimum_context_lines.get_next()
@@ -143,17 +160,6 @@ def _reformat_single_file(  # pylint: disable=too-many-arguments,too-many-locals
             last_successful_reformat = rev2_isorted
             break
 
-        # 4. run black
-        formatted = run_black(rev2_isorted, black_config)
-        logger.debug("Read %s lines from edited file %s", len(rev2_isorted.lines), src)
-        logger.debug("Black reformat resulted in %s lines", len(formatted.lines))
-
-        # 5. get the diff between the edited and reformatted file
-        opcodes = diff_and_get_opcodes(rev2_isorted, formatted)
-
-        # 6. convert the diff into chunks
-        black_chunks = list(opcodes_to_chunks(opcodes, rev2_isorted, formatted))
-
         # 7. choose reformatted content
         chosen = TextDocument.from_lines(
             choose_lines(black_chunks, edited_linenums),
@@ -170,7 +176,7 @@ def _reformat_single_file(  # pylint: disable=too-many-arguments,too-many-locals
             len(chosen.lines),
         )
         try:
-            verify_ast_unchanged(rev2_isorted, chosen, black_chunks, edited_linenums)
+            verifier.assert_equivalent_to_baseline(chosen)
         except NotEquivalentError:
             # Diff produced misaligned chunks which couldn't be reconstructed into
             # a partially re-formatted Python file which produces an identical AST.
@@ -181,6 +187,7 @@ def _reformat_single_file(  # pylint: disable=too-many-arguments,too-many-locals
                 src,
                 context_lines,
             )
+            debug_dump(black_chunks, edited_linenums)
             minimum_context_lines.respond(False)
         else:
             minimum_context_lines.respond(True)

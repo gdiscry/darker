@@ -13,7 +13,7 @@ from darker.verification import BinarySearch, NotEquivalentError, verify_ast_unc
     dict(dst_content=["if True:", "    pass"], expect=None),
 )
 def test_verify_ast_unchanged(dst_content, expect):
-    black_chunks: List[DiffChunk] = [(1, ("black",), ("chunks",))]
+    black_chunks: List[DiffChunk] = [DiffChunk(1, ("black",), ("chunks",))]
     edited_linenums = [1, 2]
     try:
         verify_ast_unchanged(

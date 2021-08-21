@@ -3,6 +3,7 @@
 import io
 import logging
 import tokenize
+import typing
 from datetime import datetime
 from itertools import chain
 from pathlib import Path
@@ -167,7 +168,10 @@ class TextDocument:
         )
 
 
-DiffChunk = Tuple[int, TextLines, TextLines]
+class DiffChunk(typing.NamedTuple):
+    offset: int
+    old_lines: TextLines
+    new_lines: TextLines
 
 
 def debug_dump(black_chunks: List[DiffChunk], edited_linenums: List[int]) -> None:

@@ -148,4 +148,4 @@ def opcodes_to_chunks(
     """
     _validate_opcodes(opcodes)
     for tag, i1, i2, j1, j2 in opcodes:
-        yield i1 + 1, src.lines[i1:i2], dst.lines[j1:j2]
+        yield DiffChunk(i1 + 1, src.lines[i1:i2], dst.lines[j1:j2])

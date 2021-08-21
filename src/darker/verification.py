@@ -1,8 +1,8 @@
 """Verification for unchanged AST before and after reformatting"""
 
-from typing import List
+from typing import Dict, List
 
-from black import assert_equivalent
+from black import parse_ast, stringify_ast
 
 from darker.utils import DiffChunk, TextDocument, debug_dump
 
@@ -67,3 +67,28 @@ def verify_ast_unchanged(
     except AssertionError as exc_info:
         debug_dump(black_chunks, edited_linenums)
         raise NotEquivalentError(str(exc_info))
+
+
+class AstConsistencyVerifier:
+    """
+    Verifies if new document.
+
+    Keeps in-memory data about previous comparisons to improve performance.
+    """
+    def __init__(self, baseline: TextDocument) -> None:
+        self._baseline_ast_str = "\n".join(stringify_ast(parse_ast(baseline.string)))
+        self._comparisons: Dict[str, bool] = {baseline.string: True}
+
+    def is_equivalent_to_baseline(self, document: TextDocument) -> bool:
+        if document.string in self._comparisons:
+            return self._comparisons[document.string]
+
+        document_ast = parse_ast(document.string)
+        document_ast_str = "\n".join(stringify_ast(document_ast))
+
+        self._comparisons[document.string] = document_ast_str == self._baseline_ast_str
+        return self._comparisons[document.string]
+
+    def assert_equivalent_to_baseline(self, document: TextDocument) -> None:
+        if not self.is_equivalent_to_baseline(document):
+            raise NotEquivalentError
