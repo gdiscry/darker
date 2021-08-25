@@ -137,6 +137,10 @@ def _reformat_single_file(  # pylint: disable=too-many-arguments,too-many-locals
     # Convert the diff into chunks
     black_chunks = list(opcodes_to_chunks(opcodes, rev2_isorted, formatted))
 
+    # Exit early if nothing to do
+    if not black_chunks:
+        return rev2_isorted
+
     # get max reasonable -U
     search_upper_bound = max(max(len(chunk.old_lines), len(chunk.new_lines)) for chunk in black_chunks)
 
