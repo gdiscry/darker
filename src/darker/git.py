@@ -275,3 +275,7 @@ class EditedLinenumsDiffer:
         )
         edited_opcodes = diff_and_get_opcodes(old, content)
         return list(opcodes_to_edit_linenums(edited_opcodes, context_lines))
+
+
+def is_git_repo(path: Path) -> bool:
+    return any(p.name == '.git' and p.is_dir() for p in path.iterdir())

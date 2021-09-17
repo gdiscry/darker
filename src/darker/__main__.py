@@ -19,6 +19,7 @@ from darker.command_line import parse_command_line
 from darker.config import OutputMode, dump_config
 from darker.diff import diff_and_get_opcodes, opcodes_to_chunks
 from darker.git import (
+    is_git_repo,
     WORKTREE,
     EditedLinenumsDiffer,
     RevisionRange,
@@ -321,7 +322,9 @@ def main(argv: List[str] = None) -> int:
         black_config["skip_magic_trailing_comma"] = args.skip_magic_trailing_comma
 
     paths = {Path(p) for p in args.src}
-    git_root = get_common_root(paths)
+    # Old git revisions (e.g. 2.7.x) exports GIT_DIR=.git environment variable.
+    # This messes up a case where git_root is resolved as subdirectory of repo.
+    git_root = Path.cwd() if is_git_repo(Path.cwd()) else get_common_root(paths)
     failures_on_modified_lines = False
 
     revrange = RevisionRange.parse(args.revision)
