@@ -277,5 +277,14 @@ class EditedLinenumsDiffer:
         return list(opcodes_to_edit_linenums(edited_opcodes, context_lines))
 
 
+def find_git_repo(path: Path) -> Path:
+    while True:
+        if is_git_repo(path):
+            return path
+        path = path.parent
+        if path == path.parent:
+            raise RuntimeError("Cannot resolve git repo")
+
+
 def is_git_repo(path: Path) -> bool:
     return any(p.name == '.git' and p.is_dir() for p in path.iterdir())
