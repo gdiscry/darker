@@ -5,6 +5,23 @@ These features will be included in the next release:
 
 Added
 -----
+- Empty and all-whitespace files are now reformatted properly
+- Darker now allows itself to modify files when called with ``pre-commit -o HEAD``, but
+  also emits a warning about this being an experimental feature
+- Mention Black's possible new line range formatting support in README
+
+Fixed
+-----
+- ``/foo $ darker --diff /bar/my-repo`` now works: the current working directory can be
+  in a different part of the directory hierarchy
+- An incompatible ``isort`` version now causes a short user-friendly error message
+
+
+1.3.0_ - 2021-09-04
+===================
+
+Added
+-----
 - Support for Black's ``--skip-magic-trailing-comma`` option
 - ``darker --diff`` output is now identical to that of ``black --diff``
 - The ``-d`` / ``--stdout`` option outputs the reformatted contents of the single Python
