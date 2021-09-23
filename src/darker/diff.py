@@ -65,6 +65,7 @@ a mixed result with only selected regions reformatted can be reconstructed.
 """
 
 import logging
+import string
 from difflib import SequenceMatcher
 from typing import Generator, List, Tuple
 
@@ -89,7 +90,13 @@ def diff_and_get_opcodes(
     Line numbers are zero based.
 
     """
-    matcher = SequenceMatcher(None, src.lines, dst.lines, autojunk=False)
+    whitespace = frozenset(string.whitespace)
+
+    def isjunk(s: str) -> bool:
+        """Use empty lines as forced chunk boundaries"""
+        return all(c in whitespace for c in s)
+
+    matcher = SequenceMatcher(isjunk, src.lines, dst.lines, autojunk=False)
     opcodes = matcher.get_opcodes()
     logger.debug(
         "Diff between edited and reformatted has %s opcode%s",
