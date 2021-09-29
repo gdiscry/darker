@@ -92,7 +92,7 @@ class AstConsistencyVerifier:
             document_ast_str = "\n".join(stringify_ast(document_ast))
             comparison = document_ast_str == self._baseline_ast_str
 
-        self._comparisons[document.string] = document_ast_str == self._baseline_ast_str
+        self._comparisons[document.string] = comparison
         return self._comparisons[document.string]
 
     def assert_equivalent_to_baseline(self, document: TextDocument) -> None:
