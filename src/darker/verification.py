@@ -71,7 +71,7 @@ def verify_ast_unchanged(
 
 class AstConsistencyVerifier:
     """
-    Verifies if new document.
+    Verifies if new document is consistent on AST level with baseline.
 
     Keeps in-memory data about previous comparisons to improve performance.
     """
@@ -83,8 +83,14 @@ class AstConsistencyVerifier:
         if document.string in self._comparisons:
             return self._comparisons[document.string]
 
-        document_ast = parse_ast(document.string)
-        document_ast_str = "\n".join(stringify_ast(document_ast))
+        try:
+            document_ast = parse_ast(document.string)
+        except SyntaxError:
+            # Syntax errors are never equivalent to non-SyntaxError baseline
+            comparison = False
+        else:
+            document_ast_str = "\n".join(stringify_ast(document_ast))
+            comparison = document_ast_str == self._baseline_ast_str
 
         self._comparisons[document.string] = document_ast_str == self._baseline_ast_str
         return self._comparisons[document.string]
