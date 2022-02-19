@@ -14,8 +14,8 @@ REVISION = os.getenv(
     "INPUT_REVISION", default=os.getenv("INPUT_COMMIT_RANGE", default="HEAD^")
 )
 
-print(f"INPUT_REVISION: {os.getenv("INPUT_REVISION", default="NOT SET")}")
-print(f"INPUT_COMMIT_RANGE: {os.getenv("INPUT_COMMIT_RANGE", default="NOT SET")}")
+print(f"INPUT_REVISION: {os.getenv('INPUT_REVISION', default='NOT SET')}")
+print(f"INPUT_COMMIT_RANGE: {os.getenv('INPUT_COMMIT_RANGE', default='NOT SET')}")
 
 run([sys.executable, "-m", "venv", str(ENV_PATH)], check=True)
 
