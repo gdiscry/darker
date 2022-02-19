@@ -10,9 +10,13 @@ ENV_BIN = ENV_PATH / ("Scripts" if sys.platform == "win32" else "bin")
 OPTIONS = os.getenv("INPUT_OPTIONS", default="")
 SRC = os.getenv("INPUT_SRC", default="")
 VERSION = os.getenv("INPUT_VERSION", default="")
-REVISION = os.getenv(
-    "INPUT_REVISION", default=os.getenv("INPUT_COMMIT_RANGE", default="HEAD^")
-)
+REVISION = os.getenv("INPUT_REVISION")
+COMMIT_RANGE = os.getenv("INPUT_COMMIT_RANGE")
+
+if not REVISION:
+    if not COMMIT_RANGE:
+        COMMIT_RANGE = "HEAD^"
+    REVISION = COMMIT_RANGE
 
 print(f"INPUT_REVISION: {os.getenv('INPUT_REVISION', default='NOT SET')}")
 print(f"INPUT_COMMIT_RANGE: {os.getenv('INPUT_COMMIT_RANGE', default='NOT SET')}")
