@@ -58,6 +58,7 @@ def test_blacken_single_file_common_ancestor(git_repo):
     result = darker.__main__._blacken_single_file(
         git_repo.root,
         Path("a.py"),
+        Path("a.py"),
         EditedLinenumsDiffer(
             git_repo.root,
             RevisionRange.parse_with_common_ancestor("master...", git_repo.root),
