@@ -46,6 +46,11 @@ STDOUT = (
     " there's just one file to reformat."
 )
 
+STDIN_FILEPATH = (
+    "Path to the file in the Git repository that Darker will treat stdin as. Only valid"
+    " with `--revision=<rev1>..:WORKTREE:` (`:WORKTREE:` being the default for `rev2`)"
+)
+
 ISORT_PARTS = ["Also sort imports using the `isort` package"]
 if not isort:
     ISORT_PARTS.append(f". {ISORT_INSTRUCTION} to enable usage of this option.")
