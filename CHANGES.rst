@@ -7,6 +7,8 @@ Added
 -----
 - The ``--jobs`` option now specifies how many Darker jobs are used to process files in
   parallel to complete reformatting/linting faster.
+- Sort imports only if the range of modified lines overlaps with changes resulting from
+  sorting the imports.
 
 Fixed
 -----
